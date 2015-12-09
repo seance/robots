@@ -1,28 +1,5 @@
 import _ from 'lodash';
 
-const directionCommands = {
-  N: {
-    L: ({x, y}) => ({x, y, d: 'W'}),
-    R: ({x, y}) => ({x, y, d: 'E'}),
-    F: ({x, y, d}) => ({x, y: y+1, d})
-  },
-  E: {
-    L: ({x, y}) => ({x, y, d: 'N'}),
-    R: ({x, y}) => ({x, y, d: 'S'}),
-    F: ({x, y, d}) => ({x: x+1, y, d})
-  },
-  S: {
-    L: ({x, y}) => ({x, y, d: 'E'}),
-    R: ({x, y}) => ({x, y, d: 'W'}),
-    F: ({x, y, d}) => ({x, y: y-1, d})
-  },
-  W: {
-    L: ({x, y}) => ({x, y, d: 'S'}),
-    R: ({x, y}) => ({x, y, d: 'N'}),
-    F: ({x, y, d}) => ({x: x-1, y, d})
-  },
-}
-
 export const runRobots = (inputString) => {
   return _.reduce(parseLines(inputString), (state, line) => {
     switch (state.mode) {
@@ -35,25 +12,6 @@ export const runRobots = (inputString) => {
     losts: [],
     out: ''
   }).out;
-}
-
-const parseLines = (inputString) =>
-  inputString ? _.filter(inputString.split('\n'), _.negate(_.isEmpty)) : [];
-
-const parseCommands = (inputString) =>
-  inputString ? _.filter(inputString.split(''), _.negate(_.isEmpty)) : [];
-
-const isOutOfBounds = ({x, y, d}, {w, h}) =>
-  x<0 || x>w || y<0 || y>h;
-
-const isPreviouslyLost = ({x, y, d}, cmd, losts) =>
-  _.some(losts, p => x == p.x && y == p.y && d == p.d && cmd == p.cmd);
-
-const renderOut = (out, p) =>
-  `${out}${p.x} ${p.y} ${p.d}${p.lost ? ' LOST' : ''}\n`
-
-const parseError = (message) => {
-  throw new Error(`Parse error: ${message}`);
 }
 
 const readDimensions = (s, state) => {
@@ -113,4 +71,46 @@ const runCommands = (cmds, dim, pos, losts) => {
       ? _.assign(pos, { lost: true, cmd: cmd })
       : newPos;
   }, pos);
+}
+
+const parseLines = (inputString) =>
+  inputString ? _.filter(inputString.split('\n'), _.negate(_.isEmpty)) : [];
+
+const parseCommands = (inputString) =>
+  inputString ? _.filter(inputString.split(''), _.negate(_.isEmpty)) : [];
+
+const isOutOfBounds = ({x, y, d}, {w, h}) =>
+  x < 0 || x > w || y < 0 || y > h;
+
+const isPreviouslyLost = ({x, y, d}, cmd, losts) =>
+  _.some(losts, p => x == p.x && y == p.y && d == p.d && cmd == p.cmd);
+
+const renderOut = (out, p) =>
+  `${out}${p.x} ${p.y} ${p.d}${p.lost ? ' LOST' : ''}\n`
+
+const parseError = (message) => {
+  throw new Error(`Parse error: ${message}`);
+}
+
+const directionCommands = {
+  N: {
+    L: ({x, y}) => ({x, y, d: 'W'}),
+    R: ({x, y}) => ({x, y, d: 'E'}),
+    F: ({x, y, d}) => ({x, y: y+1, d})
+  },
+  E: {
+    L: ({x, y}) => ({x, y, d: 'N'}),
+    R: ({x, y}) => ({x, y, d: 'S'}),
+    F: ({x, y, d}) => ({x: x+1, y, d})
+  },
+  S: {
+    L: ({x, y}) => ({x, y, d: 'E'}),
+    R: ({x, y}) => ({x, y, d: 'W'}),
+    F: ({x, y, d}) => ({x, y: y-1, d})
+  },
+  W: {
+    L: ({x, y}) => ({x, y, d: 'S'}),
+    R: ({x, y}) => ({x, y, d: 'N'}),
+    F: ({x, y, d}) => ({x: x-1, y, d})
+  },
 }
