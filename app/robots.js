@@ -92,25 +92,13 @@ const parseError = (message) => {
   throw new Error(`Parse error: ${message}`);
 }
 
+const face = d => ({ x, y }) => ({ x, y, d })
+
+const move = (dx, dy) => ({ x, y, d }) => ({ x: x + dx, y: y + dy, d })
+
 const directionCommands = {
-  N: {
-    L: ({x, y}) => ({x, y, d: 'W'}),
-    R: ({x, y}) => ({x, y, d: 'E'}),
-    F: ({x, y, d}) => ({x, y: y+1, d})
-  },
-  E: {
-    L: ({x, y}) => ({x, y, d: 'N'}),
-    R: ({x, y}) => ({x, y, d: 'S'}),
-    F: ({x, y, d}) => ({x: x+1, y, d})
-  },
-  S: {
-    L: ({x, y}) => ({x, y, d: 'E'}),
-    R: ({x, y}) => ({x, y, d: 'W'}),
-    F: ({x, y, d}) => ({x, y: y-1, d})
-  },
-  W: {
-    L: ({x, y}) => ({x, y, d: 'S'}),
-    R: ({x, y}) => ({x, y, d: 'N'}),
-    F: ({x, y, d}) => ({x: x-1, y, d})
-  },
+  N: { L: face('W'), R: face('E'), F: move(0, +1) },
+  E: { L: face('N'), R: face('S'), F: move(+1, 0) },
+  S: { L: face('E'), R: face('W'), F: move(0, -1) },
+  W: { L: face('S'), R: face('N'), F: move(-1, 0) }
 }
