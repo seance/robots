@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const cardinals = {
+const directionCommands = {
   N: {
     L: ({x, y}) => ({x, y, d: 'W'}),
     R: ({x, y}) => ({x, y, d: 'E'}),
@@ -26,23 +26,27 @@ const cardinals = {
 export const runRobots = (inputString) => {
   return _.reduce(parseLines(inputString), (state, line) => {
     switch (state.mode) {
-      case 'dimensions': return readDimensions(line);
+      case 'dimensions': return readDimensions(line, state);
       case 'position': return readPosition(line, state);
       case 'commands': return readCommands(line, state);
     }
-  }, { mode: 'dimensions' }).out;
+  }, {
+    mode: 'dimensions',
+    losts: [],
+    out: ''
+  }).out;
 }
 
 const parseLines = (inputString) =>
   inputString ? _.filter(inputString.split('\n'), _.negate(_.isEmpty)) : [];
 
 const parseCommands = (inputString) =>
-  inputString ?  _.filter(inputString.split(''), _.negate(_.isEmpty)) : [];
+  inputString ? _.filter(inputString.split(''), _.negate(_.isEmpty)) : [];
 
-const isLostPosition = ({x, y, d}, {w, h}) =>
+const isOutOfBounds = ({x, y, d}, {w, h}) =>
   x<0 || x>w || y<0 || y>h;
 
-const isBadPosition = ({x, y, d}, cmd, losts) =>
+const isPreviouslyLost = ({x, y, d}, cmd, losts) =>
   _.some(losts, p => x == p.x && y == p.y && d == p.d && cmd == p.cmd);
 
 const renderOut = (out, p) =>
@@ -52,18 +56,16 @@ const parseError = (message) => {
   throw new Error(`Parse error: ${message}`);
 }
 
-const readDimensions = (s) => {
+const readDimensions = (s, state) => {
   const match = /^(\d+) (\d+)$/.exec(s);
   return match
-    ? {
+    ? _.assign(state, {
       mode: 'position',
       dim: {
         w: parseInt(match[1], 10),
         h: parseInt(match[2], 10)
-      },
-      out: '',
-      losts: []
       }
+    })
     : parseError(`Dimensions: ${s}`);
 }
 
@@ -76,32 +78,31 @@ const readPosition = (s, state) => {
         x: parseInt(match[1], 10),
         y: parseInt(match[2], 10),
         d: match[3]
-       }
-      })
+      }
+    })
     : parseError(`Position: ${s}`);
 }
 
 const readCommands = (s, state) => {
   const match = /^[LRF]*$/.exec(s);
-  const cmds = match ? parseCommands(s) : parseError(`Commands: ${s}`);
-  const [p, losts] = runCommands(cmds, state.dim, state.pos, state.losts);
-  const out = renderOut(state.out, p)
+  const cmds  = match ? parseCommands(s) : parseError(`Commands: ${s}`);
+  const pos   = runCommands(cmds, state.dim, state.pos, state.losts);
+  const losts = pos.lost ? state.losts.concat(pos) : state.losts;
+  const out   = renderOut(state.out, pos)
 
   return _.assign(state, { mode: 'position', out, losts });
 }
 
 const runCommands = (cmds, dim, pos, losts) => {
-  const p = _.reduce(cmds, (pos, cmd) => {
+  return _.reduce(cmds, (pos, cmd) => {
     if (pos.lost) return pos;
 
-    const newPos = isBadPosition(pos, cmd, losts)
-      ? pos
-      : cardinals[pos.d][cmd](pos);
+    const newPos = !isPreviouslyLost(pos, cmd, losts)
+      ? directionCommands[pos.d][cmd](pos)
+      : pos;
 
-    return isLostPosition(newPos, dim)
+    return isOutOfBounds(newPos, dim)
       ? _.assign(pos, { lost: true, cmd: cmd })
-       : newPos;
+      : newPos;
   }, pos);
-
-  return [p, p.lost ? losts.concat(p) : losts];
 }

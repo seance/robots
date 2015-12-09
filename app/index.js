@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { runRobots } from './robots';
 
 const input = `5 3
