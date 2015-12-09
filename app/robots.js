@@ -85,12 +85,20 @@ const readPosition = (s, state) => {
 
 const readCommands = (s, state) => {
   const match = /^[LRF]*$/.exec(s);
-  const cmds  = match ? parseCommands(s) : parseError(`Commands: ${s}`);
-  const pos   = runCommands(cmds, state.dim, state.pos, state.losts);
-  const losts = pos.lost ? state.losts.concat(pos) : state.losts;
-  const out   = renderOut(state.out, pos)
+  return match
+    ? (() => {
+      const cmds  = parseCommands(s)
+      const pos   = runCommands(cmds, state.dim, state.pos, state.losts);
+      const losts = pos.lost ? state.losts.concat(pos) : state.losts;
+      const out   = renderOut(state.out, pos)
 
-  return _.assign(state, { mode: 'position', out, losts });
+      return _.assign(state, {
+         mode: 'position',
+         losts,
+         out
+      });
+    })()
+    : parseError(`Commands: ${s}`);
 }
 
 const runCommands = (cmds, dim, pos, losts) => {
