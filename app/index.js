@@ -8,6 +8,12 @@ RFRFRFRF
 FRRFLLFFRRFLL
 
 0 3 W
-LLFFFLFLFL`
+LLFFFLFLFL
+
+0 0 N
+FFFF
+
+0 0 N
+FFFFFFFFFFFRF`
 
 console.log(runRobots(input));
