@@ -79,10 +79,10 @@ const parseLines = (inputString) =>
 const parseCommands = (inputString) =>
   inputString ? _.filter(inputString.split(''), _.negate(_.isEmpty)) : [];
 
-const isOutOfBounds = ({x, y, d}, {w, h}) =>
+const isOutOfBounds = ({ x, y, d }, { w, h }) =>
   x < 0 || x > w || y < 0 || y > h;
 
-const isPreviouslyLost = ({x, y, d}, cmd, losts) =>
+const isPreviouslyLost = ({ x, y, d }, cmd, losts) =>
   _.some(losts, p => x == p.x && y == p.y && d == p.d && cmd == p.cmd);
 
 const renderOut = (out, p) =>
