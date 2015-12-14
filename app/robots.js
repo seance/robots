@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 export const runRobots = (inputString) => {
-  return _.reduce(parseLines(inputString), (state, line) => {
+  const state = _.reduce(parseLines(inputString), (state, line) => {
     switch (state.mode) {
       case 'dimensions': return readDimensions(line, state);
       case 'position': return readPosition(line, state);
@@ -10,8 +10,10 @@ export const runRobots = (inputString) => {
   }, {
     mode: 'dimensions',
     losts: [],
-    out: ''
-  }).out;
+    outs: []
+  });
+
+  return renderOutput(state.outs);
 }
 
 const readDimensions = (s, state) => {
@@ -45,15 +47,15 @@ const readCommands = (s, state) => {
   const match = /^[LRF]*$/.exec(s);
   return match
     ? (() => {
-      const cmds  = parseCommands(s)
+      const cmds  = parseCommands(s);
       const pos   = runCommands(cmds, state.dim, state.pos, state.losts);
       const losts = pos.lost ? state.losts.concat(pos) : state.losts;
-      const out   = renderOut(state.out, pos)
+      const outs  = state.outs.concat(pos);
 
       return _.assign(state, {
          mode: 'position',
          losts,
-         out
+         outs
       });
     })()
     : parseError(`Commands: ${s}`);
@@ -73,6 +75,9 @@ const runCommands = (cmds, dim, pos, losts) => {
   }, pos);
 }
 
+const renderOutput = (outs) => _.reduce(outs, (out, p) =>
+  `${out}${p.x} ${p.y} ${p.d}${p.lost ? ' LOST' : ''}\n`, '')
+
 const parseLines = (inputString) =>
   inputString ? _.filter(inputString.split('\n'), _.negate(_.isEmpty)) : [];
 
@@ -84,9 +89,6 @@ const isOutOfBounds = ({ x, y, d }, { w, h }) =>
 
 const isPreviouslyLost = ({ x, y, d }, cmd, losts) =>
   _.some(losts, p => x == p.x && y == p.y && d == p.d && cmd == p.cmd);
-
-const renderOut = (out, p) =>
-  `${out}${p.x} ${p.y} ${p.d}${p.lost ? ' LOST' : ''}\n`
 
 const parseError = (message) => {
   throw new Error(`Parse error: ${message}`);
